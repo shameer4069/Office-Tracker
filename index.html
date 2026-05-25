@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>New Office — Readiness Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800;900&family=Barlow+Condensed:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --green:#2ECC71;--green-bg:#0d3320;--green-border:#1a6640;
+  --amber:#F5A623;--amber-bg:#3d2800;--amber-border:#7a5200;
+  --red:#E74C3C;--red-bg:#3d0e0a;--red-border:#7a1e18;
+  --gold:#D4A017;--bg:#0D1117;--surface:#161b22;--surface2:#1c2128;
+  --border:#30363d;--text:#e6edf3;--muted:#8b949e;
+}
+body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.header{background:linear-gradient(135deg,#0a1628,#0d1e3d 50%,#0a1628);border-bottom:2px solid var(--gold);padding:20px 24px 16px;text-align:center;position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 40px,rgba(212,160,23,.03) 40px,rgba(212,160,23,.03) 41px)}
+.header-label{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:4px;position:relative}
+.header-title{font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:900;color:#fff;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;position:relative}
+.header-sub{font-size:13px;color:var(--muted);margin-bottom:16px;position:relative}
+.summary-row{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;position:relative}
+.summary-card{display:flex;align-items:center;gap:12px;padding:12px 20px;border-radius:10px;border:1.5px solid;min-width:140px}
+.summary-card.green{background:var(--green-bg);border-color:var(--green-border)}
+.summary-card.amber{background:var(--amber-bg);border-color:var(--amber-border)}
+.summary-card.red{background:var(--red-bg);border-color:var(--red-border)}
+.summary-icon{font-size:24px}
+.summary-num{font-size:32px;font-weight:900;line-height:1}
+.summary-lbl{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;opacity:.8}
+.summary-card.green .summary-num,.summary-card.green .summary-lbl{color:var(--green)}
+.summary-card.amber .summary-num,.summary-card.amber .summary-lbl{color:var(--amber)}
+.summary-card.red .summary-num,.summary-card.red .summary-lbl{color:var(--red)}
+.data-note{font-size:11px;color:var(--muted);padding:6px 16px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.save-indicator{font-size:11px;color:var(--green);display:none;gap:5px;align-items:center}
+.save-indicator.show{display:flex}
+.toolbar{display:flex;gap:8px;padding:10px 16px;background:var(--surface2);border-bottom:1px solid var(--border);flex-wrap:wrap;align-items:center}
+.toolbar-label{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.filter-btn{padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;font-family:'Barlow',sans-serif;letter-spacing:.5px}
+.filter-btn:hover{border-color:var(--gold);color:var(--gold)}
+.filter-btn.active{background:var(--gold);border-color:var(--gold);color:#000}
+.toolbar-right{display:flex;gap:8px;margin-left:auto;align-items:center}
+.add-row-btn{padding:4px 14px;border-radius:20px;border:1px dashed var(--gold);background:transparent;color:var(--gold);font-size:11px;font-weight:700;cursor:pointer;font-family:'Barlow',sans-serif;transition:all .15s}
+.add-row-btn:hover{background:rgba(212,160,23,.1)}
+.save-file-btn{padding:5px 16px;border-radius:20px;border:1.5px solid var(--green-border);background:var(--green-bg);color:var(--green);font-size:11px;font-weight:800;cursor:pointer;font-family:'Barlow',sans-serif;display:flex;align-items:center;gap:5px;transition:all .15s}
+.save-file-btn:hover{background:#0d3320cc;border-color:var(--green)}
+.pdf-btn{padding:5px 16px;border-radius:20px;border:none;background:var(--gold);color:#000;font-size:11px;font-weight:800;cursor:pointer;font-family:'Barlow',sans-serif;display:flex;align-items:center;gap:5px;transition:all .15s}
+.pdf-btn:hover{background:#c49010}
+.section-header{display:flex;align-items:center;gap:10px;padding:8px 16px;background:#1a2035;border-top:1px solid var(--border);border-bottom:1px solid var(--border);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold);justify-content:space-between}
+.section-header-left{display:flex;align-items:center;gap:10px}
+.add-section-row-btn{padding:3px 11px;border-radius:20px;border:1px dashed var(--gold);background:transparent;color:var(--gold);font-size:10px;font-weight:700;cursor:pointer;font-family:'Barlow',sans-serif;letter-spacing:.5px;transition:all .15s;white-space:nowrap;flex-shrink:0}
+.add-section-row-btn:hover{background:rgba(212,160,23,.15)}
+table.tracker{width:100%;border-collapse:collapse;font-size:12px}
+table.tracker thead th{background:var(--surface);color:var(--muted);font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:8px 10px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);white-space:nowrap}
+table.tracker thead th:first-child{width:32px;text-align:center}
+table.tracker thead th.item-col{text-align:left;min-width:160px}
+table.tracker thead th.day-col{text-align:center;width:82px}
+table.tracker thead th.target-col{width:64px;text-align:center}
+table.tracker thead th.notes-col{text-align:left}
+table.tracker thead th.del-col{width:28px}
+table.tracker tbody tr{border-bottom:1px solid var(--border);transition:background .15s}
+table.tracker tbody tr:hover{background:rgba(255,255,255,.03)}
+table.tracker td{padding:7px 10px;border-right:1px solid rgba(48,54,61,.5);vertical-align:middle}
+td.num{text-align:center;color:var(--muted);font-size:11px}
+td.item-name{font-weight:500;font-size:12px;color:var(--text)}
+td.day-cell{text-align:center}
+td.target{text-align:center;font-size:11px;font-weight:600;color:var(--gold)}
+td.notes{font-size:11px;color:var(--muted);line-height:1.4}
+td.del-cell{text-align:center}
+[contenteditable]{outline:none;cursor:text;border-radius:3px;transition:background .1s}
+[contenteditable]:hover{background:rgba(255,255,255,.05)}
+[contenteditable]:focus{background:rgba(212,160,23,.08);outline:1px solid rgba(212,160,23,.4);outline-offset:1px}
+.badge{display:inline-flex;align-items:center;justify-content:center;padding:3px 7px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:.5px;white-space:nowrap;cursor:pointer;user-select:none;transition:opacity .15s}
+.badge:hover{opacity:.8}
+.badge.ready{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.badge.progress{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)}
+.badge.notready{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+.badge.dash{background:transparent;color:var(--muted);border:1px dashed rgba(139,148,158,.3);font-size:12px;cursor:pointer}
+.add-col-btn{padding:4px 14px;border-radius:20px;border:1px dashed #6e8cff;background:transparent;color:#6e8cff;font-size:11px;font-weight:700;cursor:pointer;font-family:'Barlow',sans-serif;letter-spacing:.5px;transition:all .15s}
+.add-col-btn:hover{background:rgba(110,140,255,.1)}
+.del-col-btn{background:none;border:none;color:#444;cursor:pointer;font-size:11px;padding:1px 3px;border-radius:3px;transition:color .15s;display:block;margin:2px auto 0}
+.del-col-btn:hover{color:var(--red)}
+.del-btn{background:none;border:none;color:#444;cursor:pointer;font-size:14px;padding:2px 4px;border-radius:3px;transition:color .15s}
+.del-btn:hover{color:var(--red)}
+.wip-section{background:var(--surface);border-top:2px solid var(--gold)}
+.wip-header{background:#1a2035;padding:10px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.add-wip-btn{padding:3px 12px;border-radius:20px;border:1px dashed var(--gold);background:transparent;color:var(--gold);font-size:11px;font-weight:700;cursor:pointer;font-family:'Barlow',sans-serif;transition:all .15s}
+.add-wip-btn:hover{background:rgba(212,160,23,.1)}
+table.wip{width:100%;border-collapse:collapse;font-size:12px}
+table.wip thead th{background:var(--surface2);color:var(--muted);font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:8px 12px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);text-align:left}
+table.wip tbody tr{border-bottom:1px solid var(--border)}
+table.wip tbody tr:hover{background:rgba(255,255,255,.025)}
+table.wip td{padding:9px 12px;border-right:1px solid rgba(48,54,61,.4);vertical-align:top;font-size:12px;line-height:1.5;color:var(--muted)}
+table.wip td.wip-item{font-weight:600;color:var(--text)}
+table.wip td.sno{text-align:center;color:var(--muted);font-size:11px;width:36px}
+.legend{display:flex;gap:20px;align-items:center;padding:10px 16px;border-top:1px solid var(--border);background:var(--surface);flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
+.legend-dot{width:10px;height:10px;border-radius:50%}
+.legend-dot.green{background:var(--green)}
+.legend-dot.amber{background:var(--amber)}
+.legend-dot.red{background:var(--red)}
+
+@media print {
+  @page{size:A3 landscape;margin:8mm}
+  body{background:#fff!important;color:#111!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .toolbar,.del-btn,.del-col,.del-cell,.add-row-btn,.add-wip-btn,.pdf-btn,.save-file-btn,.add-col-btn,.del-col-btn,.save-indicator,.legend,.add-section-row-btn{display:none!important}
+  .header{background:#0a1628!important;border-bottom:2px solid #D4A017!important;padding:10px 16px!important}
+  .header-title{font-size:22px!important}
+  .header-label,.header-sub{font-size:9px!important}
+  .summary-card{padding:8px 14px!important;min-width:110px!important}
+  .summary-num{font-size:22px!important}
+  .data-note{font-size:9px!important;padding:4px 10px!important;background:#f5f5f5!important;color:#555!important}
+  table.tracker,table.wip{font-size:8px!important}
+  table.tracker thead th,table.wip thead th{padding:5px 6px!important;font-size:7px!important;background:#1a2035!important;color:#ccc!important}
+  table.tracker td,table.wip td{padding:4px 6px!important}
+  .section-header{padding:5px 10px!important;font-size:9px!important;background:#1a2035!important}
+  .badge{padding:2px 5px!important;font-size:7px!important}
+  .badge.ready{background:#0d3320!important;color:#2ECC71!important;border-color:#1a6640!important}
+  .badge.progress{background:#3d2800!important;color:#F5A623!important;border-color:#7a5200!important}
+  .badge.notready{background:#3d0e0a!important;color:#E74C3C!important;border-color:#7a1e18!important}
+  .badge.dash{border:1px dashed #555!important;color:#888!important}
+  .wip-section{border-top:2px solid #D4A017!important}
+  .wip-header{background:#1a2035!important;color:#D4A017!important;padding:5px 10px!important;font-size:9px!important}
+  td.target{color:#b8860b!important}
+  td.notes{color:#555!important}
+  td.item-name{color:#111!important}
+  tr{page-break-inside:avoid}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-label" contenteditable spellcheck="false" data-key="header-label">Daily Site Progress · 7-Day View</div>
+  <div class="header-title" contenteditable spellcheck="false" data-key="header-title">New Office — Readiness Tracker</div>
+  <div class="header-sub" contenteditable spellcheck="false" data-key="header-sub">Summary</div>
+  <div class="summary-row">
+    <div class="summary-card green"><div class="summary-icon">✅</div><div><div class="summary-num" id="count-ready">0</div><div class="summary-lbl">Fully Ready</div></div></div>
+    <div class="summary-card amber"><div class="summary-icon">⏳</div><div><div class="summary-num" id="count-progress">0</div><div class="summary-lbl">In Progress</div></div></div>
+    <div class="summary-card red"><div class="summary-icon">❌</div><div><div class="summary-num" id="count-notready">0</div><div class="summary-lbl">Not Ready</div></div></div>
+  </div>
+</div>
+
+<div class="data-note">
+  <span contenteditable spellcheck="false" data-key="data-note">Note: Data as of 24-05-26</span>
+  <span class="save-indicator" id="save-indicator">✓ Saved</span>
+</div>
+
+<div class="toolbar">
+  <span class="toolbar-label">Filter:</span>
+  <button class="filter-btn active" onclick="filterRows('all',this)">All</button>
+  <button class="filter-btn" onclick="filterRows('ready',this)">Fully Ready</button>
+  <button class="filter-btn" onclick="filterRows('progress',this)">In Progress</button>
+  <button class="filter-btn" onclick="filterRows('notready',this)">Not Ready</button>
+  <div class="toolbar-right">
+    <button class="add-row-btn" onclick="addSectionRow('other')">+ Add Row</button>
+    <button class="add-col-btn" onclick="addDateColumn()">+ Add Date Column</button>
+    <button class="save-file-btn" onclick="downloadHTML()">💾 Save File</button>
+    <button class="pdf-btn" onclick="downloadPDF()">⬇ Download PDF</button>
+  </div>
+</div>
+
+<div style="overflow-x:auto">
+<table class="tracker">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th class="item-col">Item</th>
+      <th class="day-col"><span contenteditable spellcheck="false">21 May</span><button class="del-col-btn" onclick="removeDateColumn(this)" title="Remove column">✕</button></th>
+      <th class="day-col"><span contenteditable spellcheck="false">22 May</span><button class="del-col-btn" onclick="removeDateColumn(this)" title="Remove column">✕</button></th>
+      <th class="day-col"><span contenteditable spellcheck="false">23 May</span><button class="del-col-btn" onclick="removeDateColumn(this)" title="Remove column">✕</button></th>
+      <th class="day-col"><span contenteditable spellcheck="false">24 May</span><button class="del-col-btn" onclick="removeDateColumn(this)" title="Remove column">✕</button></th>
+      <th class="day-col"><span contenteditable spellcheck="false">25 May</span><button class="del-col-btn" onclick="removeDateColumn(this)" title="Remove column">✕</button></th>
+      <th class="day-col"><span contenteditable spellcheck="false">26 May</span><button class="del-col-btn" onclick="removeDateColumn(this)" title="Remove column">✕</button></th>
+      <th class="day-col"><span contenteditable spellcheck="false">27 May</span><button class="del-col-btn" onclick="removeDateColumn(this)" title="Remove column">✕</button></th>
+      <th class="target-col">Target</th>
+      <th class="notes-col">Remarks / Notes</th>
+      <th class="del-col"></th>
+    </tr>
+  </thead>
+  <tbody id="tracker-body">
+
+  <!-- CIVIL RELATED -->
+  <tr class="section-row" data-section="civil"><td colspan="12" style="padding:0"><div class="section-header"><div class="section-header-left" contenteditable spellcheck="false">🏗️ &nbsp;Civil Related</div><button class="add-section-row-btn" onclick="addSectionRow('civil')">+ Add Row</button></div></td></tr>
+
+  <tr data-status="progress">
+    <td class="num" contenteditable spellcheck="false">1</td>
+    <td class="item-name" contenteditable spellcheck="false">Painting — FF main areas</td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="target" contenteditable spellcheck="false">26-May</td>
+    <td class="notes" contenteditable spellcheck="false">2 coats completed in Common area. Will to 100% completed by 26-May-26, going parallely with other works</td>
+    <td class="del-cell"><button class="del-btn" onclick="delRow(this)">✕</button></td>
+  </tr>
+
+  <tr data-status="progress">
+    <td class="num" contenteditable spellcheck="false">2</td>
+    <td class="item-name" contenteditable spellcheck="false">HVAC duct painting</td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="target" contenteditable spellcheck="false">26-May</td>
+    <td class="notes" contenteditable spellcheck="false">Starts tomorrow 23-05-26, expected 2 days. Duct Painting 70%, Will be Completed tomorrow</td>
+    <td class="del-cell"><button class="del-btn" onclick="delRow(this)">✕</button></td>
+  </tr>
+
+  <tr data-status="ready">
+    <td class="num" contenteditable spellcheck="false">3</td>
+    <td class="item-name" contenteditable spellcheck="false">IDU unit installation</td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge ready" onclick="cycleBadge(this)">Fully Ready</span></td>
+    <td class="day-cell"><span class="badge ready" onclick="cycleBadge(this)">Fully Ready</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="target" contenteditable spellcheck="false">25-May</td>
+    <td class="notes" contenteditable spellcheck="false">14 IDU unit got installed</td>
+    <td class="del-cell"><button class="del-btn" onclick="delRow(this)">✕</button></td>
+  </tr>
+
+  <tr data-status="ready">
+    <td class="num" contenteditable spellcheck="false">4</td>
+    <td class="item-name" contenteditable spellcheck="false">Washroom partition erection</td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge ready" onclick="cycleBadge(this)">Fully Ready</span></td>
+    <td class="day-cell"><span class="badge ready" onclick="cycleBadge(this)">Fully Ready</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="target" contenteditable spellcheck="false">24-May</td>
+    <td class="notes" contenteditable spellcheck="false">Fixing for Male and Female Washroom</td>
+    <td class="del-cell"><button class="del-btn" onclick="delRow(this)">✕</button></td>
+  </tr>
+
+  <tr data-status="progress">
+    <td class="num" contenteditable spellcheck="false">5</td>
+    <td class="item-name" contenteditable spellcheck="false">Cabin glass fixing</td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="target" contenteditable spellcheck="false">27-May</td>
+    <td class="notes" contenteditable spellcheck="false">Metallic laminate completed. Glass to arrive by 23-05-26, Expected completion by Tomorrow</td>
+    <td class="del-cell"><button class="del-btn" onclick="delRow(this)">✕</button></td>
+  </tr>
+
+  <tr data-status="progress">
+    <td class="num" contenteditable spellcheck="false">6</td>
+    <td class="item-name" contenteditable spellcheck="false">Conference room table carpentry</td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="target" contenteditable spellcheck="false">27-May</td>
+    <td class="notes" contenteditable spellcheck="false">Carpentry work started in conference room for TV unit and Conference</td>
+    <td class="del-cell"><button class="del-btn" onclick="delRow(this)">✕</button></td>
+  </tr>
+
+  <tr data-status="progress">
+    <td class="num" contenteditable spellcheck="false">7</td>
+    <td class="item-name" contenteditable spellcheck="false">Pantry carpentry</td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="target" contenteditable spellcheck="false">27-May</td>
+    <td class="notes" contenteditable spellcheck="false">Will Start Tomorrow, currently tiling work in progress for pantry area</td>
+    <td class="del-cell"><button class="del-btn" onclick="delRow(this)">✕</button></td>
+  </tr>
+
+  <tr data-status="progress">
+    <td class="num" contenteditable spellcheck="false">8</td>
+    <td class="item-name" contenteditable spellcheck="false">GF demolition</td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="target" contenteditable spellcheck="false">25-May</td>
+    <td class="notes" contenteditable spellcheck="false">70% demolition In-Progress, target to complete by tomorrow</td>
+    <td class="del-cell"><button class="del-btn" onclick="delRow(this)">✕</button></td>
+  </tr>
+
+  <tr data-status="notready">
+    <td class="num" contenteditable spellcheck="false">9</td>
+    <td class="item-name" contenteditable spellcheck="false">GF mezzanine work</td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="target" contenteditable spellcheck="false">31-May</td>
+    <td class="notes" contenteditable spellcheck="false">Target completion by month end. Design has been completed, Will be started tomorrow</td>
+    <td class="del-cell"><button class="del-btn" onclick="delRow(this)">✕</button></td>
+  </tr>
+
+  <tr data-status="progress">
+    <td class="num" contenteditable spellcheck="false">10</td>
+    <td class="item-name" contenteditable spellcheck="false">GF openings — temp closures</td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="target" contenteditable spellcheck="false">25-May</td>
+    <td class="notes" contenteditable spellcheck="false">Walkthrough completed, SW wall blackwork to Start tomorrow, GF Pantry area block work started</td>
+    <td class="del-cell"><button class="del-btn" onclick="delRow(this)">✕</button></td>
+  </tr>
+
+  <tr class="section-row" data-section="basic"><td colspan="12" style="padding:0"><div class="section-header"><div class="section-header-left" contenteditable spellcheck="false">⚙️ &nbsp;Basic Necessities</div><button class="add-section-row-btn" onclick="addSectionRow('basic')">+ Add Row</button></div></td></tr>
+
+  <tr data-status="progress">
+    <td class="num" contenteditable spellcheck="false">12</td>
+    <td class="item-name" contenteditable spellcheck="false">Internet (Server room &amp; UPS room)</td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="target" contenteditable spellcheck="false">27-May</td>
+    <td class="notes" contenteditable spellcheck="false">Arranged for Day 7. All wiring has been done, testing by Neeraj on 27th May 26</td>
+    <td class="del-cell"><button class="del-btn" onclick="delRow(this)">✕</button></td>
+  </tr>
+
+  <tr data-status="progress">
+    <td class="num" contenteditable spellcheck="false">13</td>
+    <td class="item-name" contenteditable spellcheck="false">Septic tank connection</td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="target" contenteditable spellcheck="false">26-May</td>
+    <td class="notes" contenteditable spellcheck="false">Plumbing work started, expecting completion by 25-05-26</td>
+    <td class="del-cell"><button class="del-btn" onclick="delRow(this)">✕</button></td>
+  </tr>
+
+  <tr data-status="progress">
+    <td class="num" contenteditable spellcheck="false">14</td>
+    <td class="item-name" contenteditable spellcheck="false">Washroom activation</td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="target" contenteditable spellcheck="false">26-May</td>
+    <td class="notes" contenteditable spellcheck="false">Partitions erected for Male &amp; Female Rest Room. Fixing CP Sanitry by 27th May 26 – False for Restrooms will be completed tomorrow</td>
+    <td class="del-cell"><button class="del-btn" onclick="delRow(this)">✕</button></td>
+  </tr>
+
+  <tr data-status="notready">
+    <td class="num" contenteditable spellcheck="false">15</td>
+    <td class="item-name" contenteditable spellcheck="false">Water flow check</td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="target" contenteditable spellcheck="false">27-May</td>
+    <td class="notes" contenteditable spellcheck="false">Testing post erection.</td>
+    <td class="del-cell"><button class="del-btn" onclick="delRow(this)">✕</button></td>
+  </tr>
+
+  <tr data-status="progress">
+    <td class="num" contenteditable spellcheck="false">16</td>
+    <td class="item-name" contenteditable spellcheck="false">HVAC operation</td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="target" contenteditable spellcheck="false">27-May</td>
+    <td class="notes" contenteditable spellcheck="false">IDU installed, connection of ducts with machines in Progress</td>
+    <td class="del-cell"><button class="del-btn" onclick="delRow(this)">✕</button></td>
+  </tr>
+
+  <tr data-status="ready">
+    <td class="num" contenteditable spellcheck="false">17</td>
+    <td class="item-name" contenteditable spellcheck="false">Electricity operation</td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge ready" onclick="cycleBadge(this)">Fully Ready</span></td>
+    <td class="day-cell"><span class="badge ready" onclick="cycleBadge(this)">Fully Ready</span></td>
+    <td class="day-cell"><span class="badge ready" onclick="cycleBadge(this)">Fully Ready</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="target" contenteditable spellcheck="false">25-May</td>
+    <td class="notes" contenteditable spellcheck="false">~80% load until approved – FF will be operational on available 80% Load</td>
+    <td class="del-cell"><button class="del-btn" onclick="delRow(this)">✕</button></td>
+  </tr>
+
+  <tr data-status="notready">
+    <td class="num" contenteditable spellcheck="false">18</td>
+    <td class="item-name" contenteditable spellcheck="false">Workstation assembly</td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="target" contenteditable spellcheck="false">27-May</td>
+    <td class="notes" contenteditable spellcheck="false">100% delivered – Note: Depend on Ceiling Painting – Duct Painting – Carpet Installation; will start by monday/tuesday</td>
+    <td class="del-cell"><button class="del-btn" onclick="delRow(this)">✕</button></td>
+  </tr>
+
+  <tr data-status="progress">
+    <td class="num" contenteditable spellcheck="false">19</td>
+    <td class="item-name" contenteditable spellcheck="false">Carpet laying</td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="target" contenteditable spellcheck="false">25-May</td>
+    <td class="notes" contenteditable spellcheck="false">Carpet laying started, happening in parts</td>
+    <td class="del-cell"><button class="del-btn" onclick="delRow(this)">✕</button></td>
+  </tr>
+
+  <tr data-status="progress">
+    <td class="num" contenteditable spellcheck="false">20</td>
+    <td class="item-name" contenteditable spellcheck="false">Basic storage</td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="target" contenteditable spellcheck="false">26-May</td>
+    <td class="notes" contenteditable spellcheck="false">Partially in place.</td>
+    <td class="del-cell"><button class="del-btn" onclick="delRow(this)">✕</button></td>
+  </tr>
+
+  <tr data-status="progress">
+    <td class="num" contenteditable spellcheck="false">21</td>
+    <td class="item-name" contenteditable spellcheck="false">Colour completion</td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="target" contenteditable spellcheck="false">26-May</td>
+    <td class="notes" contenteditable spellcheck="false">Sequential painting in Progress, 100% Completion by 27/28 May 26</td>
+    <td class="del-cell"><button class="del-btn" onclick="delRow(this)">✕</button></td>
+  </tr>
+
+  <tr data-status="notready">
+    <td class="num" contenteditable spellcheck="false">22</td>
+    <td class="item-name" contenteditable spellcheck="false">Technical lights</td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="target" contenteditable spellcheck="false">26-May</td>
+    <td class="notes" contenteditable spellcheck="false">Linked to painting completion – Lights at site on 26-05-26, will be started from by 27-May-26</td>
+    <td class="del-cell"><button class="del-btn" onclick="delRow(this)">✕</button></td>
+  </tr>
+
+  <tr data-status="progress">
+    <td class="num" contenteditable spellcheck="false">23</td>
+    <td class="item-name" contenteditable spellcheck="false">Exhaust system</td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="target" contenteditable spellcheck="false">27-May</td>
+    <td class="notes" contenteditable spellcheck="false">To be checked post activation, only exhaust to be installed in server room</td>
+    <td class="del-cell"><button class="del-btn" onclick="delRow(this)">✕</button></td>
+  </tr>
+
+  <tr data-status="notready">
+    <td class="num" contenteditable spellcheck="false">24</td>
+    <td class="item-name" contenteditable spellcheck="false">Staircase repair (GF → FF)</td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="target" contenteditable spellcheck="false">29-May</td>
+    <td class="notes" contenteditable spellcheck="false">Tile selection completed, will be received on site by Monday</td>
+    <td class="del-cell"><button class="del-btn" onclick="delRow(this)">✕</button></td>
+  </tr>
+
+  <tr class="section-row" data-section="other"><td colspan="12" style="padding:0"><div class="section-header"><div class="section-header-left" contenteditable spellcheck="false">👥 &nbsp;Other Support / Aesthetics</div><button class="add-section-row-btn" onclick="addSectionRow('other')">+ Add Row</button></div></td></tr>
+
+  <tr data-status="progress">
+    <td class="num" contenteditable spellcheck="false">24</td>
+    <td class="item-name" contenteditable spellcheck="false">Conference room readiness</td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="target" contenteditable spellcheck="false">27-May</td>
+    <td class="notes" contenteditable spellcheck="false">Carpentry by 26-27th.</td>
+    <td class="del-cell"><button class="del-btn" onclick="delRow(this)">✕</button></td>
+  </tr>
+
+  <tr data-status="progress">
+    <td class="num" contenteditable spellcheck="false">25</td>
+    <td class="item-name" contenteditable spellcheck="false">Pantry readiness</td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="target" contenteditable spellcheck="false">27-May</td>
+    <td class="notes" contenteditable spellcheck="false">Carpentry by 26-27th.</td>
+    <td class="del-cell"><button class="del-btn" onclick="delRow(this)">✕</button></td>
+  </tr>
+
+  <tr data-status="progress">
+    <td class="num" contenteditable spellcheck="false">26</td>
+    <td class="item-name" contenteditable spellcheck="false">100% storage</td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="target" contenteditable spellcheck="false">31-May</td>
+    <td class="notes" contenteditable spellcheck="false">Partial fit-out completed.</td>
+    <td class="del-cell"><button class="del-btn" onclick="delRow(this)">✕</button></td>
+  </tr>
+
+  <tr data-status="progress">
+    <td class="num" contenteditable spellcheck="false">27</td>
+    <td class="item-name" contenteditable spellcheck="false">External plaster - paint</td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge progress" onclick="cycleBadge(this)">In Progress</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="target" contenteditable spellcheck="false">31-May</td>
+    <td class="notes" contenteditable spellcheck="false">Scaffolding installed</td>
+    <td class="del-cell"><button class="del-btn" onclick="delRow(this)">✕</button></td>
+  </tr>
+
+  <tr data-status="notready">
+    <td class="num" contenteditable spellcheck="false">28</td>
+    <td class="item-name" contenteditable spellcheck="false">Plantation</td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="target" contenteditable spellcheck="false">31-May</td>
+    <td class="notes" contenteditable spellcheck="false">Closer to completion stage – Order for Pots placed, will be received by 26-05-26</td>
+    <td class="del-cell"><button class="del-btn" onclick="delRow(this)">✕</button></td>
+  </tr>
+
+  <tr data-status="notready">
+    <td class="num" contenteditable spellcheck="false">29</td>
+    <td class="item-name" contenteditable spellcheck="false">Artwork</td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="target" contenteditable spellcheck="false">31-May</td>
+    <td class="notes" contenteditable spellcheck="false">Pending design closure.</td>
+    <td class="del-cell"><button class="del-btn" onclick="delRow(this)">✕</button></td>
+  </tr>
+
+  <tr data-status="notready">
+    <td class="num" contenteditable spellcheck="false">30</td>
+    <td class="item-name" contenteditable spellcheck="false">Decorative lights</td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge notready" onclick="cycleBadge(this)">Not Ready</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>
+    <td class="target" contenteditable spellcheck="false">31-May</td>
+    <td class="notes" contenteditable spellcheck="false">After technical lights completion.</td>
+    <td class="del-cell"><button class="del-btn" onclick="delRow(this)">✕</button></td>
+  </tr>
+
+  <tr class="section-row" data-section="manpower"><td colspan="12" style="padding:0"><div class="section-header" contenteditable spellcheck="false">⚡ &nbsp;Man Power</div></td></tr>
+
+  <tr data-status="manpower">
+    <td class="num" contenteditable spellcheck="false">31</td>
+    <td class="item-name" contenteditable spellcheck="false">Man power at Site</td>
+    <td class="day-cell" contenteditable spellcheck="false" style="font-size:16px;font-weight:800;color:#e6edf3;text-align:center">42</td>
+    <td class="day-cell" contenteditable spellcheck="false" style="font-size:16px;font-weight:800;color:#e6edf3;text-align:center">37</td>
+    <td class="day-cell" contenteditable spellcheck="false" style="font-size:16px;font-weight:800;color:#e6edf3;text-align:center">52</td>
+    <td class="day-cell" contenteditable spellcheck="false" style="font-size:16px;font-weight:800;color:#e6edf3;text-align:center">60</td>
+    <td class="day-cell" contenteditable spellcheck="false" style="text-align:center;color:var(--muted)">–</td>
+    <td class="day-cell" contenteditable spellcheck="false" style="text-align:center;color:var(--muted)">–</td>
+    <td class="day-cell" contenteditable spellcheck="false" style="text-align:center;color:var(--muted)">–</td>
+    <td class="target" contenteditable spellcheck="false">–</td>
+    <td class="notes" contenteditable spellcheck="false">1.POP-06 &nbsp;2.Electrical-03 &nbsp;3.Carpenter-08 &nbsp;4.Civil PCC-04 &nbsp;5.Civil Mason/Demolition &amp; Cleaning-10 &nbsp;6.Paint-17 &nbsp;7.Paranchi-02 &nbsp;8.Plumber-01 &nbsp;9.FAS-02 &nbsp;10.Glass Fixer &nbsp;*Total: 60*</td>
+    <td class="del-cell"><button class="del-btn" onclick="delRow(this)">✕</button></td>
+  </tr>
+
+  </tbody>
+</table>
+</div>
+
+<!-- WIP SECTION -->
+<div class="wip-section">
+  <div class="wip-header">
+    <span contenteditable spellcheck="false" data-key="wip-title">🔧 &nbsp;Work-In-Progress on FF and Infra Area Post to Shifting</span>
+    <button class="add-wip-btn" onclick="addWipRow()">+ Add Row</button>
+  </div>
+  <div style="overflow-x:auto">
+  <table class="wip">
+    <thead>
+      <tr>
+        <th style="width:36px">S.No</th>
+        <th style="width:200px">Works</th>
+        <th>Mitigation</th>
+        <th>Remarks</th>
+        <th style="width:28px" class="del-col"></th>
+      </tr>
+    </thead>
+    <tbody id="wip-body">
+      <tr>
+        <td class="sno" contenteditable spellcheck="false">1</td>
+        <td class="wip-item" contenteditable spellcheck="false">Collapsible Partition</td>
+        <td contenteditable spellcheck="false">Basic civil activities to be completed prior to shifting to minimize pending work.</td>
+        <td contenteditable spellcheck="false">Basic work activities will remain in progress.</td>
+        <td style="text-align:center" class="del-cell"><button class="del-btn" onclick="delWipRow(this)">✕</button></td>
+      </tr>
+      <tr>
+        <td class="sno" contenteditable spellcheck="false">2</td>
+        <td class="wip-item" contenteditable spellcheck="false">Scaffolding Work</td>
+        <td contenteditable spellcheck="false">Planning to complete South West external wall before shifting</td>
+        <td contenteditable spellcheck="false">External plaster work for windows will remain in progress.</td>
+        <td style="text-align:center" class="del-cell"><button class="del-btn" onclick="delWipRow(this)">✕</button></td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot green"></div> Fully Ready</div>
+  <div class="legend-item"><div class="legend-dot amber"></div> In Progress</div>
+  <div class="legend-item"><div class="legend-dot red"></div> Not Ready</div>
+  <div style="margin-left:auto;font-size:11px;color:var(--muted)">💡 Click badge to cycle · Click text to edit · ✕ to delete · Auto-saves to browser</div>
+</div>
+
+<script>
+const STATES=['dash','progress','ready','notready'];
+const LABELS={dash:'–',progress:'In Progress',ready:'Fully Ready',notready:'Not Ready'};
+const STORAGE_KEY='office_tracker_v3';
+let saveTimer=null;
+
+function cycleBadge(el){
+  const cur=STATES.find(s=>el.classList.contains(s))||'dash';
+  const next=STATES[(STATES.indexOf(cur)+1)%STATES.length];
+  el.className='badge '+next;
+  el.textContent=LABELS[next];
+  updateRowStatus(el.closest('tr'));
+  updateSummary();
+  scheduleSave();
+}
+
+function updateRowStatus(row){
+  if(!row||!('status' in row.dataset)||row.dataset.status==='manpower')return;
+  let status='dash';
+  row.querySelectorAll('.badge').forEach(b=>{
+    const s=STATES.find(x=>b.classList.contains(x));
+    if(s&&s!=='dash')status=s;
+  });
+  if(status==='dash')status='progress';
+  row.dataset.status=status;
+}
+
+function updateSummary(){
+  let r=0,p=0,n=0;
+  document.querySelectorAll('#tracker-body tr[data-status]').forEach(row=>{
+    const s=row.dataset.status;
+    if(s==='ready')r++;
+    else if(s==='progress')p++;
+    else if(s==='notready')n++;
+  });
+  document.getElementById('count-ready').textContent=r;
+  document.getElementById('count-progress').textContent=p;
+  document.getElementById('count-notready').textContent=n;
+}
+
+function filterRows(status,btn){
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('#tracker-body tr[data-status]').forEach(row=>{
+    row.style.display=(status==='all'||row.dataset.status===status||row.dataset.status==='manpower')?'':'none';
+  });
+  document.querySelectorAll('#tracker-body tr.section-row').forEach(r=>r.style.display='');
+}
+
+function getDayColCount(){
+  return document.querySelectorAll('table.tracker thead th.day-col').length;
+}
+function makeBadgeCells(){
+  return Array(getDayColCount()).fill(0).map(()=>`<td class="day-cell"><span class="badge dash" onclick="cycleBadge(this)">–</span></td>`).join('');
+}
+function makeNewRow(){
+  const tr=document.createElement('tr');
+  tr.dataset.status='progress';
+  tr.innerHTML=`<td class="num" contenteditable spellcheck="false"></td><td class="item-name" contenteditable spellcheck="false">New item</td>${makeBadgeCells()}<td class="target" contenteditable spellcheck="false">–</td><td class="notes" contenteditable spellcheck="false"></td><td class="del-cell"><button class="del-btn" onclick="delRow(this)">✕</button></td>`;
+  return tr;
+}
+// Insert row at the END of the given section (just before the next section-row)
+function addSectionRow(section){
+  const tbody=document.getElementById('tracker-body');
+  const rows=[...tbody.rows];
+  // find the section header row
+  const sectionIdx=rows.findIndex(r=>r.dataset&&r.dataset.section===section);
+  if(sectionIdx===-1)return;
+  // find next section-row after this one
+  let insertBefore=null;
+  for(let i=sectionIdx+1;i<rows.length;i++){
+    if(rows[i].classList.contains('section-row')){insertBefore=rows[i];break;}
+  }
+  const tr=makeNewRow();
+  if(insertBefore){tbody.insertBefore(tr,insertBefore);}
+  else{tbody.appendChild(tr);}
+  tr.querySelector('.item-name').focus();
+  updateSummary();scheduleSave();
+}
+function delRow(btn){btn.closest('tr').remove();updateSummary();scheduleSave();}
+function addWipRow(){
+  const n=document.getElementById('wip-body').rows.length+1;
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td class="sno" contenteditable spellcheck="false">${n}</td><td class="wip-item" contenteditable spellcheck="false">New work item</td><td contenteditable spellcheck="false"></td><td contenteditable spellcheck="false"></td><td style="text-align:center" class="del-cell"><button class="del-btn" onclick="delWipRow(this)">✕</button></td>`;
+  document.getElementById('wip-body').appendChild(tr);
+  tr.querySelector('.wip-item').focus();scheduleSave();
+}
+function delWipRow(btn){btn.closest('tr').remove();scheduleSave();}
+
+/* ── DATE COLUMN ADD / REMOVE ── */
+function getNextDate(){
+  // Find all day-col headers and parse the last one to suggest next date
+  const headers=[...document.querySelectorAll('table.tracker thead th.day-col')];
+  if(!headers.length) return '28 May';
+  const last=headers[headers.length-1].textContent.trim();
+  // Try to parse "DD May" or "DD-May" style
+  const m=last.match(/(\d{1,2})[\s\-]*(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i);
+  if(!m) return '';
+  const months={jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
+  const day=parseInt(m[1]);
+  const mon=months[m[2].toLowerCase()];
+  const d=new Date(2026,mon,day+1);
+  const dayNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return d.getDate()+' '+dayNames[d.getMonth()];
+}
+
+function addDateColumn(){
+  const suggested=getNextDate();
+  const label=prompt('Enter date label for new column:', suggested);
+  if(!label||!label.trim()) return;
+
+  const thead=document.querySelector('table.tracker thead tr');
+  // Insert new th before Target column (second to last before del-col)
+  const targetTh=thead.querySelector('th.target-col');
+
+  const newTh=document.createElement('th');
+  newTh.className='day-col';
+  newTh.setAttribute('contenteditable','true');
+  newTh.setAttribute('spellcheck','false');
+  newTh.innerHTML=label.trim()+'<button class="del-col-btn" onclick="removeDateColumn(this)" title="Remove column">✕</button>';
+  thead.insertBefore(newTh,targetTh);
+
+  // Add a badge cell to every data row (before the target td)
+  document.querySelectorAll('#tracker-body tr[data-status]').forEach(row=>{
+    const targetTd=row.querySelector('td.target');
+    if(!targetTd) return;
+    // check if manpower row (no badges, just editable)
+    const isManpower=row.dataset.status==='manpower';
+    const td=document.createElement('td');
+    td.className='day-cell';
+    if(isManpower){
+      td.setAttribute('contenteditable','true');
+      td.setAttribute('spellcheck','false');
+      td.style.textAlign='center';
+      td.style.color='var(--muted)';
+      td.textContent='–';
+    } else {
+      td.innerHTML=`<span class="badge dash" onclick="cycleBadge(this)">–</span>`;
+    }
+    row.insertBefore(td,targetTd);
+  });
+
+  scheduleSave();
+}
+
+function removeDateColumn(btn){
+  const th=btn.closest('th');
+  const idx=[...th.parentNode.children].indexOf(th);
+  // remove the th
+  th.remove();
+  // remove the same column index from every body row
+  document.querySelectorAll('#tracker-body tr').forEach(row=>{
+    const cells=[...row.cells];
+    if(cells[idx]) cells[idx].remove();
+  });
+  scheduleSave();
+}
+function scheduleSave(){clearTimeout(saveTimer);saveTimer=setTimeout(saveData,800);}
+
+function saveData(){
+  try{
+    const data={fields:{},trackerHTML:document.getElementById('tracker-body').innerHTML,wipHTML:document.getElementById('wip-body').innerHTML};
+    document.querySelectorAll('[data-key]').forEach(el=>{data.fields[el.dataset.key]=el.innerHTML;});
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
+    showSaved();
+  }catch(e){console.warn('Save failed',e);}
+}
+
+function loadData(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(!raw)return;
+    const data=JSON.parse(raw);
+    if(data.trackerHTML)document.getElementById('tracker-body').innerHTML=data.trackerHTML;
+    if(data.wipHTML)document.getElementById('wip-body').innerHTML=data.wipHTML;
+    if(data.fields){Object.entries(data.fields).forEach(([k,v])=>{const el=document.querySelector(`[data-key="${k}"]`);if(el)el.innerHTML=v;});}
+    updateSummary();
+  }catch(e){console.warn('Load failed',e);}
+}
+
+function showSaved(){
+  const ind=document.getElementById('save-indicator');
+  ind.classList.add('show');
+  clearTimeout(ind._t);
+  ind._t=setTimeout(()=>ind.classList.remove('show'),2000);
+}
+
+document.addEventListener('input',e=>{if(e.target.matches('[contenteditable]'))scheduleSave();});
+
+function downloadPDF(){
+  saveData();
+  document.querySelectorAll('#tracker-body tr').forEach(r=>r.style.display='');
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector('.filter-btn').classList.add('active');
+  window.print();
+}
+
+function downloadHTML(){
+  // Grab the full current page HTML
+  const clone = document.documentElement.cloneNode(true);
+
+  // Bake in the live tracker body
+  clone.querySelector('#tracker-body').innerHTML = document.getElementById('tracker-body').innerHTML;
+  clone.querySelector('#wip-body').innerHTML = document.getElementById('wip-body').innerHTML;
+
+  // Bake in all named fields (header, column titles, data-note, wip-title)
+  document.querySelectorAll('[data-key]').forEach(el => {
+    const target = clone.querySelector(`[data-key="${el.dataset.key}"]`);
+    if(target) target.innerHTML = el.innerHTML;
+  });
+
+  // Remove any inline display:none from filter (show all rows in saved file)
+  clone.querySelectorAll('#tracker-body tr').forEach(r => r.style.display = '');
+
+  // Strip the localStorage load so saved file always shows its own baked data
+  // by injecting a script that clears the storage key on load
+  const clearScript = clone.ownerDocument.createElement('script');
+  clearScript.textContent = `localStorage.removeItem('office_tracker_v3');`;
+  clone.querySelector('head').appendChild(clearScript);
+
+  const html = '<!DOCTYPE html>\n' + clone.outerHTML;
+  const blob = new Blob([html], {type:'text/html'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'office_readiness_tracker.html';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+/* INIT — load saved data first, otherwise use defaults already in HTML */
+loadData();
+updateSummary();
+</script>
+</body>
+</html>
